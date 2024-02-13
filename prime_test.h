@@ -6,7 +6,7 @@
 namespace lp {
     template <class T>
     bool IsPrime(T n) {
-        assert(n > 0 && "We check only positive numbers!");
+        assert(n > T(0) && "We check only positive numbers!");
         if (n == T(1)) {
             return false;
         }
