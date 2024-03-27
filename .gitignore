@@ -28,9 +28,9 @@
 
 # Executables
 *.exe
-*.cpp
 *.out
 *.app
+main.cpp
 
 .idea
 cmake-build-debug
