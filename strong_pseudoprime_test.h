@@ -1,5 +1,6 @@
 #pragma once
 #include "powers.h"
+#include "random_gen.h"
 
 namespace lp {
 namespace details {
@@ -9,7 +10,7 @@ template <class T>
 class StrongPseudoPrime {
 public:
     explicit StrongPseudoPrime(T n) : number_(n), coefficient_(Build(n).coefficient), power_(Build(n).power) {
-        assert(n > T(1) && n % T(2) != T(0) && "Only for odd numbers bigger than 1!");
+        assert(n > T(1) && "Only for numbers bigger than 1!");
     }
 
     T GetCounter() const{
@@ -17,7 +18,7 @@ public:
     }
 
     void ResetCounter() {
-        counter_ = T(0);
+        counter_ = 0; //int
     }
 
     T GetBase() {
@@ -42,6 +43,7 @@ public:
     }
 
     bool DeterministicTest() {
+        return true; //to do
     }
 
 private:
@@ -63,11 +65,15 @@ private:
         return false;
     }
     bool TestProb() {
-        static std::random_device rd;
-        static std::mt19937 eng(rd());
-        std::uniform_int_distribution<> distribution(2, number_ - 1);
+        if (number_ == 2){
+            return true;
+        }
+        if (number_ % T(2) == T(0)){
+            return false;
+        }
+        Random<T> random_number;
         while (counter_ < details::MaxCounter) {
-            T cur_base = T(distribution(eng));
+            T cur_base = random_number.Generate(T(2), number_-1);
             if (!ProbPrime(cur_base)) {
                 return false;
             }

@@ -2,7 +2,7 @@
 #include <random>
 #include <vector>
 #include "powers.h"
-
+#include "strong_pseudoprime_test.h"
 
 namespace lp {
 namespace details {
@@ -11,10 +11,10 @@ constexpr int ProductSize = 10;
 constexpr int RandomRange = 1000;
 template <class T>
 T ComputeAbsDif(T x1, T x2) {
-   if (x1 >= x2){
-       return x1 - x2;
-   }
-   return x2 - x1;
+    if (x1 >= x2) {
+        return x1 - x2;
+    }
+    return x2 - x1;
 }
 template <class T>
 T ComputeFactor(T x1, T c, T number) {
@@ -27,10 +27,10 @@ T ComputeFactor(T x1, T c, T number) {
             ++terms;
             x2 = (x2 * x2 + c) % number;
             if (x2 != x1) {
-                product = (product * ComputeAbsDif(x1,x2)) % number;
+                product = (product * ComputeAbsDif(x1, x2)) % number;
             }
             if (product == T(0)) {
-                T g = Gcd(number, ComputeAbsDif(x1,x2));
+                T g = Gcd(number, ComputeAbsDif(x1, x2));
                 if (g > 1) {
                     return g;
                 }
@@ -51,27 +51,49 @@ T ComputeFactor(T x1, T c, T number) {
     }
     return T(0);
 }
-}  // namespace details
+
 template <class T>
-std::vector<T> FactorizeRo(T number) {
+T FindFactorRo(T number) {
     assert(number > T(0) && "Only positive numbers!");
-    std::vector<T> res;
     static std::random_device rd;
     static std::mt19937 eng(rd());
     std::uniform_int_distribution<> distribution(2, details::RandomRange);
-    T copy = number;
-    while (copy != T(1)) {
+    T g = T(0);
+    while (g == T(0) || g == number) {
         T x1 = T(distribution(eng));
         T c = T(distribution(eng));
-        T g = details::ComputeFactor(x1, c, number);
-        while (g != T(0) && g != number && copy % g == T(0)) {
-            std::cout<<g<<" ";
-            copy = copy / g;
-            res.emplace_back(g);
-        }
+        g = details::ComputeFactor(x1, c, number);
     }
-    std::cout << "ABOBA" << " ";
-    return res;
+    return g;
+}
+
+template <class T>
+void DoFactorizeRo(T number, std::vector<T> &factors) {
+    assert(number > T(0) && "Only positive numbers!");
+    if (number == T(1)) {
+        return;
+    }
+    lp::StrongPseudoPrime<T> test_prime(number);
+    bool test_1 = test_prime.ProbabilisticTest();
+    bool test_2 = test_prime.ProbabilisticTest();
+    if (test_1 && test_2) {
+        factors.emplace_back(number);
+        return;
+    }
+    T factor = FindFactorRo(number);
+    DoFactorizeRo(factor, factors);
+    DoFactorizeRo(T(number / factor), factors);
+}
+}  // namespace details
+template <class T>
+std::vector<T> FactorizeRo(T number) {
+    std::vector<T> factors = {T(1)};
+    while (number % T(2) == 0) {
+        number = number / T(2);
+        factors.emplace_back(2);
+    }
+    details::DoFactorizeRo(number, factors);
+    return factors;
 }
 
 }  // namespace lp

@@ -6,7 +6,7 @@
 namespace lp {
 namespace details {
 static constexpr int64_t HalfOfMaxInt64 = 4294967295;
-} // namespace details
+}  // namespace details
 
 template <class T>
 OverflowType<T> Sqrt(OverflowType<T> n) {
